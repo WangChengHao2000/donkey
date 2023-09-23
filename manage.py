@@ -4,6 +4,7 @@ from donkeycar.parts.transform import Lambda
 
 def run(cfg):
     V = dk.vehicle.Vehicle()
+
     add_camera(V, cfg)
     add_controller(V, cfg)
     add_drive(V, cfg)
@@ -12,8 +13,6 @@ def run(cfg):
 
 
 def add_camera(V, cfg):
-    cam = None
-
     if cfg.CAMERA_TYPE == "PICAM":
         from donkeycar.parts.camera import PiCamera
 
@@ -24,29 +23,31 @@ def add_camera(V, cfg):
             vflip=cfg.CAMERA_VFLIP,
             hflip=cfg.CAMERA_HFLIP,
         )
+        V.add(cam, inputs=[], outputs=["image"], threaded=True)
     elif cfg.CAMERA_TYPE == "MOCK":
         from donkeycar.parts.camera import MockCamera
 
         cam = MockCamera(
             image_w=cfg.IMAGE_W, image_h=cfg.IMAGE_H, image_d=cfg.IMAGE_DEPTH
         )
+        V.add(cam, inputs=[], outputs=["image"], threaded=True)
     else:
         raise (Exception("Unknown camera type: %s" % cfg.CAMERA_TYPE))
 
-    if cam:
-        V.add(cam, inputs=[], outputs=["image"], threaded=True)
-
 
 def add_controller(V, cfg):
-    from controller import Controller
+    if cfg.CONTROLLER_TYPE == "MOCK":
+        from controller import Controller
 
-    V.mem["steering"] = (cfg.STEERING_LEFT_PWM + cfg.STEERING_RIGHT_PWM) / 2
-    V.mem["throttle"] = cfg.THROTTLE_STOPPED_PWM
-    V.add(
-        Controller(),
-        inputs=["image", "steering", "throttle"],
-        outputs=["steering", "throttle"],
-    )
+        V.mem["steering"] = (cfg.STEERING_LEFT_PWM + cfg.STEERING_RIGHT_PWM) / 2
+        V.mem["throttle"] = cfg.THROTTLE_STOPPED_PWM
+        V.add(
+            Controller(),
+            inputs=["image", "steering", "throttle"],
+            outputs=["steering", "throttle"],
+        )
+    else:
+        raise (Exception("Unknown controller type: %s" % cfg.CONTROLLER_TYPE))
 
 
 def add_drive(V, cfg):
