@@ -9,7 +9,7 @@ def run(cfg):
     add_controller(V, cfg)
     add_drive(V, cfg)
 
-    V.start(rate_hz=3, max_loop_count=3)
+    V.start(rate_hz=3, max_loop_count=10)
 
 
 def add_camera(V, cfg):
@@ -39,10 +39,20 @@ def add_controller(V, cfg):
     if cfg.CONTROLLER_TYPE == "MOCK":
         from controller import Controller
 
-        V.mem["steering"] = (cfg.STEERING_LEFT_PWM + cfg.STEERING_RIGHT_PWM) / 2
+        V.mem["steering"] = int((cfg.STEERING_LEFT_PWM + cfg.STEERING_RIGHT_PWM) / 2)
         V.mem["throttle"] = cfg.THROTTLE_STOPPED_PWM
         V.add(
             Controller(),
+            inputs=["image", "steering", "throttle"],
+            outputs=["steering", "throttle"],
+        )
+    elif cfg.CONTROLLER_TYPE == "BACKEND":
+        from controller import BackendController
+
+        V.mem["steering"] = int((cfg.STEERING_LEFT_PWM + cfg.STEERING_RIGHT_PWM) / 2)
+        V.mem["throttle"] = cfg.THROTTLE_STOPPED_PWM
+        V.add(
+            BackendController(),
             inputs=["image", "steering", "throttle"],
             outputs=["steering", "throttle"],
         )
