@@ -20,7 +20,7 @@ def run(cfg):
     add_controller(V, cfg)
     add_drive(V, cfg)
 
-    V.start(rate_hz=10, max_loop_count=100)
+    V.start(rate_hz=10, max_loop_count=300)
 
 
 def add_simulator(V, cfg):
@@ -68,8 +68,8 @@ def add_camera(V, cfg):
 
 def add_controller(V, cfg):
     if not cfg.DONKEY_GYM:
-        V.mem["steering"] = int((cfg.STEERING_LEFT_PWM + cfg.STEERING_RIGHT_PWM) / 2)
-        V.mem["throttle"] = cfg.THROTTLE_STOPPED_PWM
+        V.mem["steering"] = 0
+        V.mem["throttle"] = 0.2
     else:
         V.mem["steering"] = 0
         V.mem["throttle"] = 0.1
