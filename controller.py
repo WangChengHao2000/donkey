@@ -19,7 +19,6 @@ class Controller(object):
             steering -= 0.1
         if steering > 1 or steering < -1:
             self.right = not self.right
-        # throttle += random.randint(-3, 3)
         logger.info(f'steering: {steering}')
         logger.info(f'throttle: {throttle}')
         return [steering, throttle]

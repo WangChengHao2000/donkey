@@ -1,4 +1,5 @@
 import donkeycar as dk
+from donkeycar.parts.controller import LocalWebController
 from donkeycar.parts.transform import Lambda
 from donkeycar.utils import logging
 
@@ -16,11 +17,20 @@ def run(cfg):
         logger.addHandler(ch)
 
     add_simulator(V, cfg)
+
     add_camera(V, cfg)
-    add_controller(V, cfg)
+
+    if cfg.USER_CONTROLLER:
+        add_user_controller(V, cfg)
+    else:
+        add_controller(V, cfg)
+
     add_drive(V, cfg)
 
-    V.start(rate_hz=10, max_loop_count=300)
+    if cfg.USER_CONTROLLER:
+        V.start(rate_hz=10)
+    else:
+        V.start(rate_hz=10, max_loop_count=100)
 
 
 def add_simulator(V, cfg):
@@ -64,6 +74,21 @@ def add_camera(V, cfg):
             V.add(cam, inputs=[], outputs=["cam/image_array"], threaded=True)
         else:
             raise (Exception("Unknown camera type: %s" % cfg.CAMERA_TYPE))
+
+
+def add_user_controller(V, cfg):
+    V.add(
+        LocalWebController(port=cfg.WEB_CONTROL_PORT, mode=cfg.WEB_INIT_MODE),
+        inputs=["cam/image_array", 0, None, None],
+        outputs=[
+            "steering",
+            "throttle",
+            "mode",
+            "recording",
+            "buttons",
+        ],
+        threaded=True,
+    )
 
 
 def add_controller(V, cfg):
