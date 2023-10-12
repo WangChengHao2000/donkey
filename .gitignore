@@ -1,5 +1,7 @@
 /.vscode
 
+/data
+
 unitylog.txt
 
 # Byte-compiled / optimized / DLL files

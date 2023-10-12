@@ -1,6 +1,8 @@
 import donkeycar as dk
 from donkeycar.parts.controller import LocalWebController
 from donkeycar.parts.transform import Lambda
+from donkeycar.parts.tub_v2 import TubWriter
+from donkeycar.parts.datastore import TubHandler
 from donkeycar.utils import logging
 
 logger = logging.getLogger(__name__)
@@ -27,10 +29,12 @@ def run(cfg):
 
     add_drive(V, cfg)
 
+    add_record(V, cfg)
+
     if cfg.USER_CONTROLLER:
         V.start(rate_hz=10)
     else:
-        V.start(rate_hz=10, max_loop_count=100)
+        V.start(rate_hz=10, max_loop_count=50)
 
 
 def add_simulator(V, cfg):
@@ -162,6 +166,24 @@ def add_drive(V, cfg):
             )
         else:
             raise (Exception("Unknown drive type: %s" % cfg.DRIVE_TRAIN_TYPE))
+
+
+def add_record(V, cfg):
+    if cfg.TUB_RECORDING:
+        tub_path = (
+            TubHandler(path=cfg.DATA_PATH).create_tub_path()
+            if cfg.AUTO_CREATE_NEW_TUB
+            else cfg.DATA_PATH
+        )
+        inputs = ["cam/image_array", "steering", "throttle"]
+        types = ["image_array", "float", "float"]
+        meta = getattr(cfg, "METADATA", [])
+        tub_writer = TubWriter(tub_path, inputs=inputs, types=types, metadata=meta)
+        V.add(
+            tub_writer,
+            inputs=inputs,
+            outputs=["tub/num_records"],
+        )
 
 
 if __name__ == "__main__":
