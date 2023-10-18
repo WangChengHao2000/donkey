@@ -3,12 +3,13 @@ DRIVE_TRAIN_TYPE = "PWM_STEERING_THROTTLE" #(MOCK|PWM_STEERING_THROTTLE)
 
 USER_CONTROLLER = False
 
-CONTROLLER_TYPE = "MOCK"  # (MOCK|BACKEND)
+CONTROLLER_TYPE = "CV"  # (MOCK|CV|BACKEND)
 BACKEND_TYPE = "LOCAL" # (LOCAL|REMOTE)
 REMOTE_IP = None
 
 TUB_RECORDING = True
 
-DONKEY_GYM = False
+DONKEY_GYM = True
 DONKEY_SIM_PATH = "D:\projects\DonkeySimWin\donkey_sim.exe"
-DONKEY_GYM_ENV_NAME = "donkey-generated-track-v0"
+# DONKEY_GYM_ENV_NAME = "donkey-generated-track-v0"
+DONKEY_GYM_ENV_NAME = "donkey-generated-roads-v0"

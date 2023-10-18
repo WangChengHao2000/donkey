@@ -34,7 +34,7 @@ def run(cfg):
     if cfg.USER_CONTROLLER:
         V.start(rate_hz=10)
     else:
-        V.start(rate_hz=10, max_loop_count=50)
+        V.start(rate_hz=10, max_loop_count=200)
 
 
 def add_simulator(V, cfg):
@@ -96,12 +96,8 @@ def add_user_controller(V, cfg):
 
 
 def add_controller(V, cfg):
-    if not cfg.DONKEY_GYM:
-        V.mem["steering"] = 0
-        V.mem["throttle"] = 0.2
-    else:
-        V.mem["steering"] = 0
-        V.mem["throttle"] = 0.1
+    V.mem["steering"] = 0
+    V.mem["throttle"] = 0.1
 
     if cfg.CONTROLLER_TYPE == "MOCK":
         from controller import Controller
@@ -110,6 +106,14 @@ def add_controller(V, cfg):
             Controller(),
             inputs=["cam/image_array", "steering", "throttle"],
             outputs=["steering", "throttle"],
+        )
+    elif cfg.CONTROLLER_TYPE == "CV":
+        from controller import CVController
+
+        V.add(
+            CVController(),
+            inputs=["cam/image_array", "steering", "throttle"],
+            outputs=["cam/image_array", "steering", "throttle"],
         )
     elif cfg.CONTROLLER_TYPE == "BACKEND":
         from controller import BackendController
