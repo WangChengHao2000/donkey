@@ -39,7 +39,7 @@ def add_controller(V, cfg):
     V.mem["throttle"] = 0.1
 
     if cfg.CONTROLLER_TYPE == "MOCK":
-        from controller import Controller
+        from controller.controller import Controller
 
         V.add(
             Controller(),
@@ -47,7 +47,7 @@ def add_controller(V, cfg):
             outputs=["steering", "throttle"],
         )
     elif cfg.CONTROLLER_TYPE == "CV":
-        from controller import CVController
+        from controller.controller import CVController
 
         V.add(
             CVController(),
@@ -55,7 +55,7 @@ def add_controller(V, cfg):
             outputs=["cam/image_array", "steering", "throttle"],
         )
     elif cfg.CONTROLLER_TYPE == "CVTWO":
-        from controller import CVTwoLaneController
+        from controller.controller import CVTwoLaneController
 
         V.add(
             CVTwoLaneController(),
@@ -63,7 +63,7 @@ def add_controller(V, cfg):
             outputs=["cam/image_array", "steering", "throttle"],
         )
     elif cfg.CONTROLLER_TYPE == "BACKEND":
-        from controller import BackendController
+        from controller.controller import BackendController
 
         V.add(
             BackendController(),
