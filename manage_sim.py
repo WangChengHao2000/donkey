@@ -62,6 +62,14 @@ def add_controller(V, cfg):
             inputs=["cam/image_array", "steering", "throttle"],
             outputs=["cam/image_array", "steering", "throttle"],
         )
+    elif cfg.CONTROLLER_TYPE == "DL":
+        from controller.controller import DLController
+
+        V.add(
+            DLController(),
+            inputs=["cam/image_array", "steering", "throttle"],
+            outputs=["steering", "throttle"],
+        )
     elif cfg.CONTROLLER_TYPE == "BACKEND":
         from controller.controller import BackendController
 
@@ -93,5 +101,5 @@ def add_record(V, cfg):
 
 
 if __name__ == "__main__":
-    cfg = dk.load_config(myconfig="myconfig_sim_cv.py")
+    cfg = dk.load_config(myconfig="myconfig_sim_dl.py")
     run(cfg)

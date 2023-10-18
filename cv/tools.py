@@ -45,10 +45,10 @@ def region_of_interest(edges):
     polygon = np.array(
         [
             [
-                (width / 4, height / 2),
-                (width * 3 / 4, height / 2),
-                (width * 3 / 4, height),
-                (width / 4, height),
+                (width / 3, height / 2),
+                (width * 2 / 3, height / 2),
+                (width * 2 / 3, height),
+                (width / 3, height),
             ]
         ],
         np.int32,

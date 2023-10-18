@@ -1,4 +1,9 @@
 from donkeycar.utils import logging
+import torch
+import torchvision.transforms as transforms
+import cv2
+
+from dl.models import AutoDriveNet
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +50,7 @@ class CVController(object):
 
         steering_angle, frame = draw_line(image)
 
-        if steering_angle==None:
+        if steering_angle == None:
             return [frame, steering, throttle]
 
         return [frame, steering_angle, throttle]
@@ -60,7 +65,31 @@ class CVTwoLaneController(object):
 
         steering_angle, frame = draw_line(image)
 
-        if steering_angle==None:
+        if steering_angle == None:
             return [frame, steering, throttle]
 
         return [frame, steering_angle, throttle]
+
+
+class DLController(object):
+    def __init__(self, checkpoint="./results/checkpoint.pth"):
+        self.checkpoint = checkpoint
+        self.model = AutoDriveNet()
+        if checkpoint is not None:
+            self.checkpoint = torch.load(self.checkpoint)
+            self.model.load_state_dict(self.checkpoint["model"])
+
+    def run(self, image, steering, throttle):
+        self.model.eval()
+        frame = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        transformations = transforms.Compose(
+            [
+                transforms.ToTensor(),
+            ]
+        )
+        frame = transformations(frame)
+        frame = frame.reshape(1, 3, 120, 160)
+        steering_angle = self.model(frame)
+        print(steering_angle)
+        return [steering_angle, throttle]
