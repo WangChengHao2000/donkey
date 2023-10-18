@@ -1,10 +1,13 @@
 import cv2
 import numpy as np
+import math
 
 
 def draw_line(frame):
-    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    height, width, _ = frame.shape
+    BGRframe = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    hsv = cv2.cvtColor(BGRframe, cv2.COLOR_BGR2HSV)
+
     lower_blue = np.array([15, 40, 40])
     upper_blue = np.array([45, 255, 255])
 
@@ -15,11 +18,24 @@ def draw_line(frame):
     lines = detect_line(yellow_region)
     lane_lines = average_lines(yellow_region, lines)
 
-    line_frame=display_line(frame, lane_lines)
-    # line_frame=cv2.cvtColor(line_frame, cv2.COLOR_HSV2BGR)
-    line_frame=cv2.cvtColor(line_frame, cv2.COLOR_BGR2RGB)
+    line_frame = display_line(frame, lane_lines)
 
-    return lane_lines, line_frame
+    x_offset = 0
+    y_offset = 0
+    if lane_lines != None and len(lane_lines) > 0:
+        _, _, x2, _ = lane_lines[0][0]
+        mid = int(width / 2)
+        x_offset = x2 - mid
+        y_offset = int(height / 2)
+    else:
+        print("检测不到行道线")
+        return [None, line_frame]
+
+    angle_to_mid_radian = math.atan(x_offset / y_offset)
+    angle_to_mid_deg = int(angle_to_mid_radian * 180.0 / math.pi)
+    steering_angle = angle_to_mid_deg / 45.0
+
+    return steering_angle, line_frame
 
 
 def region_of_interest(edges):
@@ -29,10 +45,10 @@ def region_of_interest(edges):
     polygon = np.array(
         [
             [
-                (width / 5, height / 4),
-                (width * 4 / 5, height / 4),
-                (width * 4 / 5, height),
-                (width / 5, height),
+                (width / 4, height / 2),
+                (width * 3 / 4, height / 2),
+                (width * 3 / 4, height),
+                (width / 4, height),
             ]
         ],
         np.int32,
@@ -49,7 +65,7 @@ def detect_line(edges):
     angle = np.pi / 180
     min_thr = 10
     lines = cv2.HoughLinesP(
-        edges, rho, angle, min_thr, np.array([]), minLineLength=16, maxLineGap=4
+        edges, rho, angle, min_thr, np.array([]), minLineLength=8, maxLineGap=8
     )
     return lines
 
@@ -57,9 +73,7 @@ def detect_line(edges):
 def average_lines(frame, lines):
     lane_lines = []
     if lines is None:
-        print("没有检测到线段")
         return lane_lines
-
     fits = []
     for line in lines:
         for x1, y1, x2, y2 in line:

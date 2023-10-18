@@ -1,6 +1,3 @@
-import math
-import cv2
-
 from donkeycar.utils import logging
 
 logger = logging.getLogger(__name__)
@@ -46,20 +43,10 @@ class CVController(object):
     def run(self, image, steering, throttle):
         from cv.tools import draw_line
 
-        lane_lines, frame = draw_line(image)
-        height, width, _ = frame.shape
+        steering_angle, frame = draw_line(image)
 
-        if lane_lines == None or len(lane_lines) == 0:
+        if steering_angle==None:
             return [frame, steering, throttle]
-
-        _, _, x2, _ = lane_lines[0][0]
-        mid = int(width / 2)
-        x_offset = x2 - mid
-        y_offset = int(height / 2)
-        angle_to_mid_radian = math.atan(x_offset / y_offset)
-        angle_to_mid_deg = int(angle_to_mid_radian * 180.0 / math.pi)
-        steering_angle = angle_to_mid_deg / 45.0
-        print("steering_angle: " + str(steering_angle))
 
         return [frame, steering_angle, throttle]
 
@@ -70,3 +57,10 @@ class CVTwoLaneController(object):
 
     def run(self, image, steering, throttle):
         from cv.two_line_tools import draw_line
+
+        steering_angle, frame = draw_line(image)
+
+        if steering_angle==None:
+            return [frame, steering, throttle]
+
+        return [frame, steering_angle, throttle]
