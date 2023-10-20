@@ -4,6 +4,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
 from models import AutoDriveNet
 from datasets import AutoDriveDataset
@@ -13,15 +14,14 @@ from utils import *
 def main():
     data_folder = "./dl/data/simulate"
 
-    checkpoint = None
-    batch_size = 200
+    checkpoint = "./dl/results/checkpoint.pth"
+    batch_size = 400
     start_epoch = 1
     epochs = 2500
     lr = 1e-4
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     cudnn.benchmark = True
-    writer = SummaryWriter()
 
     model = AutoDriveNet()
     optimizer = torch.optim.Adam(
@@ -54,11 +54,11 @@ def main():
         pin_memory=True,
     )
 
-    for epoch in range(start_epoch, epochs + 1):
+    for epoch in tqdm(range(start_epoch, epochs + 1)):
         model.train()
         loss_epoch = AverageMeter()
 
-        for i, (imgs, labels) in enumerate(train_loader):
+        for _, (imgs, labels) in enumerate(train_loader):
             imgs = imgs.to(device)
             labels = labels.to(device)
 
@@ -69,18 +69,12 @@ def main():
             loss.backward()
 
             optimizer.step()
-
             loss_epoch.update(loss.item(), imgs.size(0))
 
-            print("第 " + str(i) + " 个batch训练结束")
-
-        del imgs, labels, pre_labels
-
-        writer.add_scalar("MSE_Loss", loss_epoch.avg, epoch)
-        print("epoch:" + str(epoch) + "  MSE_Loss:" + str(loss_epoch.avg))
+        tqdm.write("epoch:" + str(epoch) + "  MSE_Loss:" + str(loss_epoch.avg))
 
         if epoch % 30 == 0:
-            print("save model...")
+            tqdm.write("save model...")
             torch.save(
                 {
                     "epoch": epoch,
@@ -89,7 +83,6 @@ def main():
                 },
                 "./dl/results/checkpoint.pth",
             )
-    writer.close()
 
 
 if __name__ == "__main__":

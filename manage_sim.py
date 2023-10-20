@@ -1,6 +1,4 @@
 import donkeycar as dk
-from donkeycar.parts.controller import LocalWebController
-from donkeycar.parts.transform import Lambda
 from donkeycar.parts.tub_v2 import TubWriter
 from donkeycar.parts.datastore import TubHandler
 
@@ -12,7 +10,7 @@ def run(cfg):
     add_controller(V, cfg)
     add_record(V, cfg)
 
-    V.start(rate_hz=10, max_loop_count=200)
+    V.start(rate_hz=10, max_loop_count=500)
 
 
 def add_simulator(V, cfg):
@@ -38,15 +36,7 @@ def add_controller(V, cfg):
     V.mem["steering"] = 0
     V.mem["throttle"] = 0.1
 
-    if cfg.CONTROLLER_TYPE == "MOCK":
-        from controller.controller import Controller
-
-        V.add(
-            Controller(),
-            inputs=["cam/image_array", "steering", "throttle"],
-            outputs=["steering", "throttle"],
-        )
-    elif cfg.CONTROLLER_TYPE == "CV":
+    if cfg.CONTROLLER_TYPE == "CV":
         from controller.controller import CVController
 
         V.add(
@@ -67,14 +57,6 @@ def add_controller(V, cfg):
 
         V.add(
             DLController(),
-            inputs=["cam/image_array", "steering", "throttle"],
-            outputs=["steering", "throttle"],
-        )
-    elif cfg.CONTROLLER_TYPE == "BACKEND":
-        from controller.controller import BackendController
-
-        V.add(
-            BackendController(),
             inputs=["cam/image_array", "steering", "throttle"],
             outputs=["steering", "throttle"],
         )
@@ -101,5 +83,5 @@ def add_record(V, cfg):
 
 
 if __name__ == "__main__":
-    cfg = dk.load_config(myconfig="myconfig_sim_dl.py")
+    cfg = dk.load_config(myconfig="myconfig_sim_cv.py")
     run(cfg)

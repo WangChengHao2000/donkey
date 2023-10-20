@@ -5,34 +5,16 @@ from donkeycar.parts.tub_v2 import TubWriter
 from donkeycar.parts.datastore import TubHandler
 from donkeycar.utils import logging
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-
 
 def run(cfg):
     V = dk.vehicle.Vehicle()
 
-    if cfg.HAVE_CONSOLE_LOGGING:
-        logger.setLevel(logging.getLevelName(cfg.LOGGING_LEVEL))
-        ch = logging.StreamHandler()
-        ch.setFormatter(logging.Formatter(cfg.LOGGING_FORMAT))
-        logger.addHandler(ch)
-
     add_camera(V, cfg)
-
-    if cfg.USER_CONTROLLER:
-        add_user_controller(V, cfg)
-    else:
-        add_controller(V, cfg)
-
+    add_controller(V, cfg)
     add_drive(V, cfg)
-
     add_record(V, cfg)
-
-    if cfg.USER_CONTROLLER:
-        V.start(rate_hz=10)
-    else:
-        V.start(rate_hz=10, max_loop_count=200)
+    
+    V.start(rate_hz=10, max_loop_count=200)
 
 
 def add_camera(V, cfg):
@@ -45,13 +27,6 @@ def add_camera(V, cfg):
             image_d=cfg.IMAGE_DEPTH,
             vflip=cfg.CAMERA_VFLIP,
             hflip=cfg.CAMERA_HFLIP,
-        )
-        V.add(cam, inputs=[], outputs=["cam/image_array"], threaded=True)
-    elif cfg.CAMERA_TYPE == "MOCK":
-        from donkeycar.parts.camera import MockCamera
-
-        cam = MockCamera(
-            image_w=cfg.IMAGE_W, image_h=cfg.IMAGE_H, image_d=cfg.IMAGE_DEPTH
         )
         V.add(cam, inputs=[], outputs=["cam/image_array"], threaded=True)
     else:
@@ -77,16 +52,8 @@ def add_controller(V, cfg):
     V.mem["steering"] = 0
     V.mem["throttle"] = 0.1
 
-    if cfg.CONTROLLER_TYPE == "MOCK":
-        from controller import Controller
-
-        V.add(
-            Controller(),
-            inputs=["cam/image_array", "steering", "throttle"],
-            outputs=["steering", "throttle"],
-        )
-    elif cfg.CONTROLLER_TYPE == "CV":
-        from controller import CVController
+    if cfg.CONTROLLER_TYPE == "CV":
+        from controller.controller import CVController
 
         V.add(
             CVController(),
@@ -94,7 +61,7 @@ def add_controller(V, cfg):
             outputs=["cam/image_array", "steering", "throttle"],
         )
     elif cfg.CONTROLLER_TYPE == "CVTWO":
-        from controller import CVTwoLaneController
+        from controller.controller import CVTwoLaneController
 
         V.add(
             CVTwoLaneController(),
@@ -102,7 +69,7 @@ def add_controller(V, cfg):
             outputs=["cam/image_array", "steering", "throttle"],
         )
     elif cfg.CONTROLLER_TYPE == "BACKEND":
-        from controller import BackendController
+        from controller.controller import BackendController
 
         V.add(
             BackendController(),
@@ -146,9 +113,6 @@ def add_drive(V, cfg):
         )
         V.add(steering, inputs=["steering"], threaded=True)
         V.add(throttle, inputs=["throttle"], threaded=True)
-    elif cfg.DRIVE_TRAIN_TYPE == "MOCK":
-        V.add(Lambda(lambda v: print("execute steering: %d" % v)), inputs=["steering"])
-        V.add(Lambda(lambda v: print("execute throttle: %d" % v)), inputs=["throttle"])
     else:
         raise (Exception("Unknown drive type: %s" % cfg.DRIVE_TRAIN_TYPE))
 

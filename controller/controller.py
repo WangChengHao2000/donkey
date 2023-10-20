@@ -91,5 +91,6 @@ class DLController(object):
         frame = transformations(frame)
         frame = frame.reshape(1, 3, 120, 160)
         steering_angle = self.model(frame)
+        steering_angle = steering_angle.item()
         print(steering_angle)
         return [steering_angle, throttle]
