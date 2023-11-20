@@ -3,17 +3,17 @@ import numpy as np
 import math
 
 
-def draw_line(frame):
+def draw_line(frame, record = False):
     height, width, _ = frame.shape
     BGRframe = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     hsv = cv2.cvtColor(BGRframe, cv2.COLOR_BGR2HSV)
 
-    lower_blue = np.array([15, 40, 40])
-    upper_blue = np.array([45, 255, 255])
+    lower_blue = np.array([0, 0, 0])
+    upper_blue = np.array([180, 255, 46])
     yellow_mask = cv2.inRange(hsv, lower_blue, upper_blue)
 
-    lower_blue = np.array([0, 0, 200])
-    upper_blue = np.array([180, 30, 255])
+    lower_blue = np.array([0, 0, 0])
+    upper_blue = np.array([180, 255, 46])
     white_mask = cv2.inRange(hsv, lower_blue, upper_blue)
 
     yellow_edge = cv2.Canny(yellow_mask, 200, 400)
@@ -28,6 +28,9 @@ def draw_line(frame):
     white_lane = average_lines(frame, white_lines, direction="right")
 
     line_frame = display_two_line(frame, yellow_lane, white_lane)
+    
+    if record:
+        cv2.imwrite("cv/result.jpg", line_frame)
 
     x_offset = 0
     y_offset = 0
@@ -48,7 +51,7 @@ def draw_line(frame):
     else:
         print("检测不到行道线")
         return None, line_frame
-    
+
     angle_to_mid_radian = math.atan(x_offset / y_offset)
     angle_to_mid_deg = int(angle_to_mid_radian * 180.0 / math.pi)
     steering_angle = angle_to_mid_deg / 45.0
@@ -152,3 +155,8 @@ def display_two_line(frame, yellow_lines, white_lines, line_width=2):
                 cv2.line(line_img, (x1, y1), (x2, y2), (0, 0, 255), line_width)
     line_img = cv2.addWeighted(frame, 0.8, line_img, 1, 1)
     return line_img
+
+
+if __name__ == "__main__":
+    frame = cv2.imread("cv/test.jpg")
+    draw_line(frame=frame, record=True)

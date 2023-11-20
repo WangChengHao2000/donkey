@@ -10,7 +10,7 @@ def run(cfg):
     add_controller(V, cfg)
     add_record(V, cfg)
 
-    V.start(rate_hz=10, max_loop_count=500)
+    V.start(rate_hz=10, max_loop_count=300)
 
 
 def add_simulator(V, cfg):
@@ -83,5 +83,5 @@ def add_record(V, cfg):
 
 
 if __name__ == "__main__":
-    cfg = dk.load_config(myconfig="myconfig_sim_cv.py")
+    cfg = dk.load_config(myconfig="myconfig_sim_dl.py")
     run(cfg)
